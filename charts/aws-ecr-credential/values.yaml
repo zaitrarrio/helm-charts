@@ -5,11 +5,15 @@ targetNamespace: default
 # aws.region is the aws region where the ECR exists
 # aws.accessKeyId is the credential of a read-only user for the ECR
 # aws.secretAccessKey is the credential of a read-only user for the ECR
+# aws.sessionToken is the session/security token used to validate temporary credentials for the ECR
+# aws.roleArn is the arn of a role that should be assumed for accessing the ECR
 aws:
   account: ""
   region: ""
   accessKeyId: ""        # base64
   secretAccessKey: ""    # base64
+  sessionToken: ""       
+  roleArn: ""      
 
 jobImage: architectminds/aws-kubectl
 jobImageTag: 1.1

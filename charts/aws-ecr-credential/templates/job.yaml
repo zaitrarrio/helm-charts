@@ -36,13 +36,31 @@ spec:
         - |
           AWS_ACCOUNT={{ .Values.aws.account }}
           AWS_REGION={{ .Values.aws.region }}
+          AWS_ROLE_ARN={{ .Values.aws.roleArn }}
+          AWS_ACCESS_KEY_ID=$(echo -n $AWS_ACCESS_KEY_ID)
+          AWS_SECRET_ACCESS_KEY=$(echo -n $AWS_SECRET_ACCESS_KEY)
+          export AWS_SESSION_TOKEN={{ .Values.aws.sessionToken }}
           echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
+          echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN"
           echo "AWS_ACCOUNT=$AWS_ACCOUNT"
           echo "AWS_REGION=$AWS_REGION"
+          echo "AWS_ROLE_ARN=$AWS_ROLE_ARN" 
+
+          AWS_ECR_CREDENTIAL_PROFILE=aws-ecr-credential
+          `aws configure set credential_source Environment --profile ${AWS_ECR_CREDENTIAL_PROFILE}`
+          `aws configure set region ${AWS_REGION} --profile ${AWS_ECR_CREDENTIAL_PROFILE}`
+
+          if [ -n "$AWS_ROLE_ARN" ] ; then
+            `aws configure set role_arn ${AWS_ROLE_ARN} --profile ${AWS_ECR_CREDENTIAL_PROFILE}`
+            echo "Configured role_arn to `aws configure get role_arn --profile ${AWS_ECR_CREDENTIAL_PROFILE}` in the aws-ecr-credential profile"
+          fi
+
+          AWS_PROFILE=$AWS_ECR_CREDENTIAL_PROFILE
+
           DOCKER_REGISTRY_SERVER=https://${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com
           DOCKER_USER=AWS
-          DOCKER_PASSWORD=`aws ecr get-login --region ${AWS_REGION} --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
+          DOCKER_PASSWORD=`aws --profile ${AWS_ECR_CREDENTIAL_PROFILE} ecr get-login  --registry-ids ${AWS_ACCOUNT} | cut -d' ' -f6`
 
           echo "DOCKER_REGISTRY_SERVER=$DOCKER_REGISTRY_SERVER"
           echo "DOCKER_USER=$DOCKER_USER"
